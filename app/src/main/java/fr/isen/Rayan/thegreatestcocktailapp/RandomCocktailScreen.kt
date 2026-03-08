@@ -47,9 +47,7 @@ import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailCocktailScreen(
-    cocktailId: String = ""
-) {
+fun RandomCocktailScreen() {
     val context = LocalContext.current
 
     var cocktail by remember { mutableStateOf<CocktailDetail?>(null) }
@@ -57,15 +55,13 @@ fun DetailCocktailScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isFavorite by remember { mutableStateOf(false) }
 
-    LaunchedEffect(cocktailId) {
+    LaunchedEffect(Unit) {
         try {
             isLoading = true
             errorMessage = null
-
-            val response = NetworkManager.api.getCocktailById(cocktailId)
+            val response = NetworkManager.api.getRandomCocktail()
             cocktail = response.drinks.firstOrNull()
-            isFavorite = FavoritesManager.isFavorite(context, cocktailId)
-
+            isFavorite = cocktail?.idDrink?.let { FavoritesManager.isFavorite(context, it) } ?: false
             isLoading = false
         } catch (e: Exception) {
             errorMessage = e.message ?: "Unknown error"
@@ -85,7 +81,7 @@ fun DetailCocktailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Cocktail Detail",
+                        text = "Random Cocktail",
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -144,31 +140,19 @@ fun DetailCocktailScreen(
 
                 errorMessage != null -> {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
+                        modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "Error: $errorMessage",
-                            color = Color.White,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Text("Error: $errorMessage", color = Color.White)
                     }
                 }
 
                 cocktail == null -> {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
+                        modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "No cocktail found",
-                            color = Color.White,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Text("No cocktail found", color = Color.White)
                     }
                 }
 
@@ -245,9 +229,7 @@ fun DetailCocktailScreen(
                                     style = MaterialTheme.typography.titleMedium
                                 )
 
-                                Text(
-                                    text = cocktail?.strInstructions ?: "No instructions available."
-                                )
+                                Text(cocktail?.strInstructions ?: "No instructions available.")
                             }
                         }
 
